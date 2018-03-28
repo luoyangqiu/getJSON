@@ -5,22 +5,100 @@ const fs = require('fs');
 
 // var url = 'http://www.ygdy8.net/html/gndy/dyzz/index.html';
 
-const provinceList = ['江苏省', '陕西省']
+const provinceList = ['河北省', '江苏省', '陕西省']
 
-provinceJSON(provinceList[1])
+provinceJSON(provinceList[0])
 
 function provinceJSON(province) {
 	switch(province) {
-		case '陕西省':
-		getShanXiData();
-		break;
+		case '河北省':
+		  getHebeiData();
+		  break;
+    case '陕西省':
+      getShanXiData();
+      break;
 		case '江苏省':
-		getJiangSuData();
-		break;
+		  getJiangSuData();
+		  break;
 		default:
-		console.log('defalut')
+		  console.log('defalut')
 	}
 }
+function getHebeiData() {
+  console.log('河北省')
+    fs.createWriteStream('data/2.json')
+  const fillJSON = ".\\data\\2.json"
+  const hebeiJSON = {
+    "name": "河北省",
+      "city": []
+    }
+  const hebeiCode = []
+  // const hebeiURL = 'http://www.hbzwfw.gov.cn/jact/front/mailwrite.do?sysid=6&errorurl=http://www.hbzwfw.gov.cn/hbjis/front/register/perregister.do#'
+  const hebeiURL = 'http://www.hbzwfw.gov.cn/script/1/1709071000079031.js'
+  getHTML(hebeiURL)
+
+    function getHTML(url){
+    http.get(url, function(res) {
+        res.setEncoding('utf-8'); //防止中文乱码
+          let html = '';
+          res.on('data', function(data) {
+              html += data;
+          });
+          res.on('end', function() {
+              const htmlArray = html.split("\n")
+              let newHTML = ''
+              // const reg_html = /\"\)$/
+              htmlArray.forEach(htm => {
+                const newHtml = htm.replace(/\"\);$/mg, '').replace(/\\/mg,'')
+                // console.log(newHtml)
+                //   /(\"\);)$/g
+                const endHtml = newHtml.replace(/^(document.writeln\(\")/g, '')
+                              // console.log(endHtml)
+                              newHTML = newHTML + endHtml + '\n'
+
+              })
+                  const $ = cheerio.load(newHTML, {decodeEntities: false});
+                      $("#local_other a").each(function (idx, element) {
+                          // console.log(idx)
+              const $element = $(element);
+              hebeiCode.push($element.text())
+              // // console.log($element)
+                console.log($element.text())
+                // console.log($element.attr('value'))
+              //   // console.log($element)
+                const cityJson = {
+                  "name" : $element.text(),
+                  "area" : []
+                }
+                hebeiJSON.city.push(cityJson)
+
+
+                // const valueNumber = $element.val()
+                //  console.log(valueNumber)
+            })   
+         
+                // let index = 0
+                getAreaHTML($)
+          });
+      });
+  }
+  function getAreaHTML(query){
+        // console.log(query)
+    hebeiCode.forEach( (area, index) => {
+      console.log(index)
+      // const index = hebeiCode.indexOf(area)
+      const selectorDom = ".c_list3";
+       query(selectorDom).each((idx, ele) => {
+        console.log(ele)
+        // console.log('=====', shanxiJSON.city[index].area)
+        const $ele = query(ele)
+        console.log($ele.text())
+        // shanxiJSON.city[index].area.push($ele.text())
+       })
+    })
+  }
+}
+
 function getShanXiData() {
 	console.log('陕西省')
 	fs.createWriteStream('data/26.json')
