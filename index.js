@@ -2,11 +2,11 @@
 const http = require('http');
 const iconv = require('iconv-lite');
 const fs = require('fs');
-const qs = require('querystring');
+// const qs = require('querystring');
 
 // var url = 'http://www.ygdy8.net/html/gndy/dyzz/index.html';
 
-const provinceList = ['河北省', '江苏省', '四川省', '陕西省']
+const provinceList = ['河北省', '江苏省', '浙江省', '湖北省', '四川省', '陕西省']
 
 provinceJSON(provinceList[2])
 
@@ -18,7 +18,13 @@ function provinceJSON(province) {
 		case '江苏省':
 		  getJiangSuData();
 		  break;
-		 case '四川省':
+		case '浙江省':
+		  getZheJiangData();
+		  break;
+		case '湖北省':
+		  getHubeiData();
+		  break;
+		case '四川省':
 		  getSiChuanData();
 		  break;
 		case '陕西省':
@@ -28,6 +34,136 @@ function provinceJSON(province) {
 		  console.log('defalut')
 	}
 }
+function getZheJiangData() {
+	  const zhejiangURL = 'http://zjjcmspublic.oss-cn-hangzhou.aliyuncs.com/jcms_files/jcms1/web1/site/script/new_banner/SwitchWeb.js'
+	  // const zhejiangURL = 'http://www.zjzwfw.gov.cn/'
+	  console.log('浙江省')
+	  	fs.createWriteStream('data/10.json')
+	const fillJSON = ".\\data\\10.json"
+	const provinceJSON = {
+		"name": "浙江省",
+	    "city": []
+		}
+	const cityCode = []
+	  getHTML(zhejiangURL)
+
+	function getHTML(url){
+		http.get(url, function(res) {
+	      res.setEncoding('utf-8'); //防止中文乱码
+	        let html = '';
+	        res.on('data', function(data) {
+	            html += data;
+	        });
+	        res.on('end', function() {
+	            console.log(html);
+	                     fs.writeFile('data/zhejiang.js', html)
+	                     const zhejiangDataList = require('./data/zhejiang.js')
+	                     console.log(zhejiangDataList)
+	                // const $ = cheerio.load(html, {decodeEntities: false});
+	                    // $("#cityShi li").each(function (idx, element) {
+
+				      // const $element = $(element);
+				      // console.log($element)
+	  			      // console.log($element.text())
+	  			      // console.log($element.attr('id'))
+	  			      // cityCode.push($element.attr('id'))
+	  			      // console.log($element)
+	  			      // const cityJson = {
+	  			      // 	"name" : $element.text(),
+	  			      // 	"area" : []
+	  			      // }
+	  			      // provinceJSON.city.push(cityJson)
+	  			      // const valueNumber = $element.val()
+	  			      // 	console.log(valueNumber)
+				    // })   
+	       
+	              // let index = 0
+	              // getAreaHTML($)
+	        });
+	    });
+	}
+
+		function getAreaHTML(query) {
+		// 获取区县数据
+		console.log(query)
+		cityCode.forEach( area => {
+			// console.log(area)
+			const index = cityCode.indexOf(area)
+			const selectorDom = ".H_shengji_box1 ul[parentandid='" + area + "'] li";
+			 query(selectorDom).each((idx, ele) => {
+			 	// console.log('=====', hubeiJSON.city[index].area)
+			 	const $ele = query(ele)
+			 	// console.log($ele.text())
+			 	provinceJSON.city[index].area.push($ele.text())
+			 })
+		})
+		fs.writeFileSync(fillJSON, JSON.stringify(provinceJSON))
+	}
+}
+
+function getHubeiData() {
+	  const hubeiURL = 'http://zwfw.hubei.gov.cn/hdjl/tohdjl.jspx'
+	  console.log('湖北省')
+	  	fs.createWriteStream('data/16.json')
+	const fillJSON = ".\\data\\16.json"
+	const hubeiJSON = {
+		"name": "湖北省",
+	    "city": []
+		}
+	const hubeiCode = []
+	  getHTML(hubeiURL)
+
+	function getHTML(url){
+		http.get(url, function(res) {
+	      res.setEncoding('utf-8'); //防止中文乱码
+	        let html = '';
+	        res.on('data', function(data) {
+	            html += data;
+	        });
+	        res.on('end', function() {
+	            // console.log(html);
+	                const $ = cheerio.load(html, {decodeEntities: false});
+	                    $("#cityShi li").each(function (idx, element) {
+
+				      const $element = $(element);
+				      // console.log($element)
+	  			      // console.log($element.text())
+	  			      // console.log($element.attr('id'))
+	  			      hubeiCode.push($element.attr('id'))
+	  			      // console.log($element)
+	  			      const cityJson = {
+	  			      	"name" : $element.text(),
+	  			      	"area" : []
+	  			      }
+	  			      hubeiJSON.city.push(cityJson)
+	  			      // const valueNumber = $element.val()
+	  			      // 	console.log(valueNumber)
+				    })   
+	       
+	              // let index = 0
+	              getAreaHTML($)
+	        });
+	    });
+	}
+
+		function getAreaHTML(query) {
+		// 获取区县数据
+		console.log(query)
+		hubeiCode.forEach( area => {
+			// console.log(area)
+			const index = hubeiCode.indexOf(area)
+			const selectorDom = ".H_shengji_box1 ul[parentandid='" + area + "'] li";
+			 query(selectorDom).each((idx, ele) => {
+			 	// console.log('=====', hubeiJSON.city[index].area)
+			 	const $ele = query(ele)
+			 	// console.log($ele.text())
+			 	hubeiJSON.city[index].area.push($ele.text())
+			 })
+		})
+		fs.writeFileSync(fillJSON, JSON.stringify(hubeiJSON))
+	}
+}
+
 function getSiChuanData() {
 	console.log('四川省')
 	fs.createWriteStream('data/22.json')
@@ -43,60 +179,6 @@ function getSiChuanData() {
 	getHTML(sichuanURL)
 
 	function getHTML(url){
-		// console.log(url)
-		// const post_data = {
-		// 	action: 'GetArea'
-		// }
-		// const content=qs.stringify(post_data);
-		// const options = {
-	 //      host: 'egov.sczw.gov.cn',
-	 //      path: '/tools/SubmitHandler.ashx',	
-	 //      method: 'POST',
-	 //      headers: {
-		//   'Content-Type':'application/json',
-		//   'Content-Length':content.length
-		//   }
-  //   	};
-
-  /*
-//globalAreaJosn
-   $.each(regionsJosn, function (idx, obj) {
-                var AreaLevel = obj.AREA_LEVEL;
-                var AreaName = obj.AREA_NAME;
-                if (obj.Id == provinceid) {
-                    AreaLevel = 1;
-                    AreaName = "省级";
-                }
-                else if (obj.PARENT_ID == provinceid) {
-                    AreaLevel = 2;
-                }
-                else {
-                    AreaLevel = 3;
-                }
-                var linktarg = "";
-                var linkUrl = "/welcome.aspx?id=" + obj.Id;
-                if (obj.HOST != "" && obj.HOST != null) {
-                    linkUrl = obj.HOST + "/welcome.aspx?id=" + obj.Id;
-                }
-                if (obj.Id == siteid) {
-                    linktarg = "<a class=\"on\" href='" + linkUrl+ "' link_regoin_id=" + obj.Id + " link_regoin_pid=" + obj.PARENT_ID + ">" + AreaName + "</a>";
-                }
-                else {
-                    linktarg = "<a href='" + linkUrl + "' link_regoin_id=" + obj.Id + " link_regoin_pid=" + obj.PARENT_ID + ">" + AreaName + "</a>";
-                }
-                switch (Number(AreaLevel)) {
-                    case 1:
-                        linkcontainer.find(".link_province").append(linktarg);
-                        break;
-                    case 2:
-                        linkcontainer.find(".link_city").append(linktarg);
-                        break;
-                    case 3:
-                        linkcontainer.find(".link_country").append(linktarg);
-                        break;
-                }
-            });
-  */
 		http.get(url, function(res) {
 			// console.log(res)
 	      res.setEncoding('utf-8'); //防止中文乱码
@@ -136,24 +218,6 @@ function getSiChuanData() {
 
 
 	            fs.writeFileSync(fillJSON, JSON.stringify(sichuanJSON))
-	                // const $ = cheerio.load(html, {decodeEntities: false});
-
-	       //              $(".link_city a").each(function (idx, element) {
-	       //              	console.log(idx)
-				    //   const $element = $(element);
-				    //   // console.log($element)
-	  			  //     console.log($element.text())
-	  			  //     console.log($element.attr('value'))
-	  			  //     sichuanCode.push($element.attr('value'))
-	  			  //     // console.log($element)
-	  
-	  			  //     sichuanJSON.city.push(cityJson)
-	  			  //     // const valueNumber = $element.val()
-	  			  //     // 	console.log(valueNumber)
-				    // })   
-	       
-	              // let index = 0
-	              // getAreaHTML($)
 	        });
 	    });
 	}
