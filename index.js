@@ -1,4 +1,4 @@
-﻿const cheerio = require('cheerio');
+const cheerio = require('cheerio');
 const http = require('http');
 const iconv = require('iconv-lite');
 const fs = require('fs');
@@ -6,9 +6,9 @@ const fs = require('fs');
 
 // var url = 'http://www.ygdy8.net/html/gndy/dyzz/index.html';
 
-const provinceList = ['河北省', '江苏省', '浙江省', '湖北省', '广东省', '四川省', '陕西省']
+const provinceList = ['河北省', '江苏省', '浙江省', '福建省', '湖北省', '广东省', '四川省', '陕西省']
 
-provinceJSON(provinceList[4])
+provinceJSON(provinceList[3])
 
 function provinceJSON(province) {
 	switch(province) {
@@ -20,6 +20,9 @@ function provinceJSON(province) {
 		  	break;
 		case '浙江省':
 		  	getZheJiangData();
+		  	break;
+		case '福建省':
+		  	getFuJianData();
 		  	break;
 		case '湖北省':
 		  	getHubeiData();
@@ -37,6 +40,11 @@ function provinceJSON(province) {
 		  console.log('defalut')
 	}
 }
+function getFuJianData() {
+	const fujiangURL = 'http://www.fjbs.gov.cn/'
+	console.log('福建省')
+}
+
 function getGuangDongData() {
 	// const guangdongURL = 'http://www.gdbs.gov.cn/portal/index.do'
 	const guangdongURL = 'http://www.gdbs.gov.cn/portal/loadAsyncAADJs.do?xzqhdm=440000&callback=jQuery111104407450214630664_1522397742339&_=1522397742340'
