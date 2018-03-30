@@ -6,27 +6,30 @@ const fs = require('fs');
 
 // var url = 'http://www.ygdy8.net/html/gndy/dyzz/index.html';
 
-const provinceList = ['河北省', '江苏省', '浙江省', '湖北省', '四川省', '陕西省']
+const provinceList = ['河北省', '江苏省', '浙江省', '湖北省', '广东省', '四川省', '陕西省']
 
-provinceJSON(provinceList[2])
+provinceJSON(provinceList[4])
 
 function provinceJSON(province) {
 	switch(province) {
 		case '河北省':
-		  getHebeiData();
-		  break;
+		  	getHebeiData();
+		  	break;
 		case '江苏省':
-		  getJiangSuData();
-		  break;
+		  	getJiangSuData();
+		  	break;
 		case '浙江省':
-		  getZheJiangData();
-		  break;
+		  	getZheJiangData();
+		  	break;
 		case '湖北省':
-		  getHubeiData();
-		  break;
+		  	getHubeiData();
+		  	break;
+		case '广东省':
+		  	getGuangDongData();
+		  	break;
 		case '四川省':
-		  getSiChuanData();
-		  break;
+		  	getSiChuanData();
+		  	break;
 		case '陕西省':
       		getShanXiData();
       		break;
@@ -34,6 +37,94 @@ function provinceJSON(province) {
 		  console.log('defalut')
 	}
 }
+function getGuangDongData() {
+	// const guangdongURL = 'http://www.gdbs.gov.cn/portal/index.do'
+	const guangdongURL = 'http://www.gdbs.gov.cn/portal/loadAsyncAADJs.do?xzqhdm=440000&callback=jQuery111104407450214630664_1522397742339&_=1522397742340'
+	console.log('广东省')
+		  	fs.createWriteStream('data/18.json')
+	const fillJSON = ".\\data\\18.json"
+	const provinceJSON = {
+		"name": "广东省",
+	    "city": []
+		}
+	const cityCode = []
+	  getHTML(guangdongURL)
+
+	function getHTML(url){
+		http.get(url, function(res) {
+	      res.setEncoding('utf-8'); //防止中文乱码
+	        let html = '';
+	        res.on('data', function(data) {
+	            html += data;
+	        });
+	        res.on('end', function() {
+	                     // console.log(html)
+	                     const newHTML = html.replace(/\\/mg, "").replace(/^jQuery\d+\_\d+\(JSON.parse\(\'/mg, "").replace(/\'\)\)$/mg, "")
+	                     // const testJson = JSON.parse(JSON.stringify(newHTML))
+	                     const testJson = JSON.parse(newHTML)
+	 
+	                     /*
+http://www.gdbs.gov.cn/portal/loadAsyncAADJs.do?callback=jQuery111104407450214630664_1522397742339&xzqhdm=440300000000
+http://www.gdbs.gov.cn/portal/loadAsyncAADJs.do?callback=jQuery111104407450214630664_1522397742339&xzqhdm=440100000000
+
+	                     */
+
+	             
+	                          	const cityList = testJson['dsft']
+	                          	// const cityCode = []
+	                          	cityList.forEach((city, index) => {
+	                          		// const changeCityName = city.XZQHMC.replace(/u/mg,'\\u')
+	                          		const changeCityName = unescape(city.XZQHMC.replace(/u/mg,'\%u'))
+	                          		// cityCode.push(city.XZQHDM)
+	                          		// console.log(changeCityName)
+	                          		// provinceJSON.city.push(changeCityName)
+	                          		const cityJson = {
+					  			      	"name" : changeCityName,
+					  			      	"area" : []
+					  			      }
+					  			    provinceJSON.city.push(cityJson)
+	                          	})
+	                          	            	// console.log('get==>', provinceJSON.city)
+	                          	// provinceJSON.city.forEach()
+	                          	getAreaJSON(0)
+	                          	function getAreaJSON(index) {
+	                          		console.log(index)
+	                          		if (index + 1 <= cityList.length) {
+	                          			const code = cityList[index].XZQHDM
+		                          		console.log(code)
+		                          		const url = 'http://www.gdbs.gov.cn/portal/loadAsyncAADJs.do?callback=jQuery111104407450214630664_1522397742339&xzqhdm=' + code
+		                          		http.get(url, response => {
+		                          			    response.setEncoding('utf-8'); //防止中文乱码
+		                          			// console.log(response)
+		                          			let html = ''
+		                          			response.on('data', function(data) {
+		                          				html += data
+		                          			})
+		                          			response.on('end', () => {
+		                          				  const newJSON = html.replace(/\\/mg, "").replace(/^jQuery\d+\_\d+\(JSON.parse\(\'/mg, "").replace(/\'\)\)$/mg, "")
+								                     // const testJson = JSON.parse(JSON.stringify(newHTML))
+								                     const areaJSON = JSON.parse(newJSON)
+		                          				// console.log()
+		                          				const areaListData = areaJSON['dsft']
+		                          				areaListData.forEach(area => {
+		                          					const changeAreaName = unescape(area.XZQHMC.replace(/u/mg,'\%u'))
+		                          					console.log(changeAreaName)
+		                          					provinceJSON.city[index].area.push(changeAreaName)
+		                          				})
+		                          				getAreaJSON(index + 1)
+		                          			})
+		                          		})
+	                          		} else {
+	                          			   fs.writeFileSync(fillJSON, JSON.stringify(provinceJSON))
+	                          		}
+	                          	}
+
+	                  
+	        });
+	    });
+	}
+}
+
 function getZheJiangData() {
 	  const zhejiangURL = 'http://zjjcmspublic.oss-cn-hangzhou.aliyuncs.com/jcms_files/jcms1/web1/site/script/new_banner/SwitchWeb.js'
 	  // const zhejiangURL = 'http://www.zjzwfw.gov.cn/'
@@ -55,49 +146,52 @@ function getZheJiangData() {
 	            html += data;
 	        });
 	        res.on('end', function() {
-	            console.log(html);
-	                     fs.writeFile('data/zhejiang.js', html)
-	                     const zhejiangDataList = require('./data/zhejiang.js')
-	                     console.log(zhejiangDataList)
-	                // const $ = cheerio.load(html, {decodeEntities: false});
-	                    // $("#cityShi li").each(function (idx, element) {
-
-				      // const $element = $(element);
-				      // console.log($element)
-	  			      // console.log($element.text())
-	  			      // console.log($element.attr('id'))
-	  			      // cityCode.push($element.attr('id'))
-	  			      // console.log($element)
-	  			      // const cityJson = {
-	  			      // 	"name" : $element.text(),
-	  			      // 	"area" : []
-	  			      // }
-	  			      // provinceJSON.city.push(cityJson)
-	  			      // const valueNumber = $element.val()
-	  			      // 	console.log(valueNumber)
-				    // })   
-	       
-	              // let index = 0
-	              // getAreaHTML($)
+	        	const htmlList = html.split('\n')
+	        	let newHTML = ''
+	        	for(i = 0; i < 141; i++){
+	        		newHTML = newHTML + htmlList[i];
+	        		// console.log(htmlList[i])
+	        	}
+	        	const endHTML = `
+					        	module.exports.arrList = arrWeb;
+					       		`
+	        			newHTML = newHTML + endHTML
+	                     fs.writeFileSync('data/zhejiang.js', newHTML)
+	                    // const test2 = import arrWeb from'./data/zhejiang.js'
+	                     const ZJJson = require('./data/zhejiang.js')
+	                     // console.log(arrWeb)
+	                     // console.log(ZJJson)
+	                     Object.keys(ZJJson.arrList).forEach((key, index) => {
+	                     	const cityName = ZJJson.arrList[key][0][0].split('|')[0]
+	                     	// console.log(cityName)
+	                     	if(index !== 0){
+                     			cityCode.push(cityName)
+	                     		const cityJson = {
+				  			      	"name" : cityName,
+				  			      	"area" : []
+				  			      }
+				  			     provinceJSON.city.push(cityJson)
+	                     	}
+	                     	// console.log(ZJJson.arrList[key][0][1])
+	                     })
+	                     // console.log(cityCode)
+	                     cityCode.forEach((city, index) => {
+	                     	// console.log(ZJJson.arrList[index+1][0][0])
+	                     	const areaList = []
+	                     	const cityList = ZJJson.arrList[index+1]
+	                     	// const = te
+	                     	cityList.forEach((area, idx)=>{
+	                     		if(idx!==0){
+	                     			const areaName = area[0].split('|')[0]
+	                     			// console.log(areaName)
+	                     			areaList.push(areaName)
+	                     			provinceJSON.city[index].area.push(areaName)
+	                     		}
+	                     	})
+	                     })
+	                     fs.writeFileSync(fillJSON, JSON.stringify(provinceJSON))
 	        });
 	    });
-	}
-
-		function getAreaHTML(query) {
-		// 获取区县数据
-		console.log(query)
-		cityCode.forEach( area => {
-			// console.log(area)
-			const index = cityCode.indexOf(area)
-			const selectorDom = ".H_shengji_box1 ul[parentandid='" + area + "'] li";
-			 query(selectorDom).each((idx, ele) => {
-			 	// console.log('=====', hubeiJSON.city[index].area)
-			 	const $ele = query(ele)
-			 	// console.log($ele.text())
-			 	provinceJSON.city[index].area.push($ele.text())
-			 })
-		})
-		fs.writeFileSync(fillJSON, JSON.stringify(provinceJSON))
 	}
 }
 
