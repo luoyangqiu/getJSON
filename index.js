@@ -6,9 +6,20 @@ const fs = require('fs');
 
 // var url = 'http://www.ygdy8.net/html/gndy/dyzz/index.html';
 
-const provinceList = ['河北省', '江苏省', '浙江省', '福建省', '湖北省', '广东省', '四川省', '陕西省']
+const provinceList = ['河北省', '江苏省', '浙江省', '福建省', '山东省', '湖北省', '广东省', '四川省', '陕西省']
 
-provinceJSON(provinceList[3])
+
+let getStatus = false // 临时用于处理数据同步请求执行,避免上一次数据未处理完就开始下一次采集
+// function getAddress(index) {
+// 	if(index+1 <= provinceList.length) {
+// 		provinceJSON(provinceList[index])
+// 		if (!getStatus) {
+// 			getAddress(index + 1)
+// 		}
+// 	}
+// }
+// getAddress(0)
+provinceJSON(provinceList[4])
 
 function provinceJSON(province) {
 	switch(province) {
@@ -23,6 +34,9 @@ function provinceJSON(province) {
 		  	break;
 		case '福建省':
 		  	getFuJianData();
+		  	break;
+		case '山东省':
+		  	getShanDongData();
 		  	break;
 		case '湖北省':
 		  	getHubeiData();
@@ -39,12 +53,123 @@ function provinceJSON(province) {
 		default:
 		  console.log('defalut')
 	}
+	getStatus = true
 }
+
+	function getJSON(url) {
+		http.get(url, res => {
+			let html = ''
+			res.on('data', data => {
+				html += data
+			})
+			res.on('end', () => {
+				console.log(html)
+			})
+		})
+	}
+
+function getShanDongData() {
+	console.log('山东省')
+	// const shandongURL = 'http://zwfw.sd.gov.cn/'
+	const shandongURL = 'http://zwfw.sd.gov.cn/sdzw/front/web/cw.do'
+		fs.createWriteStream('data/14.json')
+	const fillJSON = ".\\data\\14.json"
+	const provinceJSON = {
+		"name": "山东省",
+	    "city": []
+		}
+	const cityCode = []
+	getHTML(shandongURL)
+	
+	function getHTML(url){
+    http.get(url, function(res) {
+        res.setEncoding('utf-8'); //防止中文乱码
+          let html = '';
+          res.on('data', function(data) {
+              html += data;
+          });
+          res.on('end', function() {
+              const htmlArray = html.split("\n")
+              let newHTML = ''
+              // const reg_html = /\"\)$/
+//               const deleteHTML = `/
+// //document.writeln("		<ul id="ban_9_999" style="display:none;"  class="baner">
+// //document.writeln("		</ul>/
+//               `
+              htmlArray.forEach(htm => {
+                const newHtml = htm.replace(/\"\);$/mg, '').replace(/\\/mg,'')
+                // console.log(newHtml)
+                //   /(\"\);)$/g
+                const endHtml = newHtml.replace(/^(document.writeln\(\")/g, '')
+                              // console.log(endHtml)
+                      newHTML = newHTML + endHtml + '\n'
+
+              })
+              // const regEXP = new RegExp(deleteHTML, 'mg')
+              // console.log()
+              // const testHTML = newHTML.replace(regEXP, '')
+              // console.log(testHTML)
+              // console.log(newHTML)
+                         fs.writeFileSync('data/test.html', newHTML)
+               const $ = cheerio.load(newHTML, {decodeEntities: false});
+                      $("#ds a[style]").each(function (idx, element) {
+                          // console.log(idx)
+              const $element = $(element);
+              cityCode.push($element.text())
+              // // console.log($element)
+                console.log($element.text())
+                // console.log($element.attr('value'))
+              //   // console.log($element)
+                const cityJson = {
+                  "name" : $element.text(),
+                  "area" : []
+                }
+                provinceJSON.city.push(cityJson)
+
+
+                // const valueNumber = $element.val()
+                //  console.log(valueNumber)
+            })
+         
+                // let index = 0
+                getAreaHTML($)
+          });
+      });
+  }
+    function getAreaHTML(query){
+    	// console.log('json')
+       const selectorDom = "#right_qx .text1";
+       console.log(provinceJSON.city.length)
+       query(selectorDom).each((idx, ele) => {
+        const $ele = query(ele)
+        // console.log($ele.text())
+        // console.log(idx)
+        console.log(provinceJSON.city[idx].name)
+        const dataTextList = $ele.text().split('\n')
+        // console.log(dataTextList.length)
+        dataTextList.forEach(data => {
+        	// console.log(data)
+        	const area = data.replace(/\s/mg, "")
+        	if(area.length > 0) {
+        		// console.log("this==", area)
+        		if (!/\/\//mg.test(area)) {
+        			const newArea = area.replace(/\"\)/mg, '');
+        			provinceJSON.city[idx].area.push(newArea)
+        		}
+        	}
+        })
+        // shanxiJSON.city[index].area.push($ele.text())
+       })
+       // provinceJSON.city[0].name = '省直管县'
+       		fs.writeFileSync(fillJSON, JSON.stringify(provinceJSON))
+  }
+}
+
 function getFuJianData() {
 	// const fujiangURL = 'http://www.fjbs.gov.cn/';
 	const fujiangURL = 'http://www.fjbs.gov.cn/index.action';
 	const fujiangCode = '?fn=newSiteList&punid=BE604230CB234D4620B334BED6517446';
-	console.log('福建省');	  	
+	console.log('福建省');
 	fs.createWriteStream('data/12.json')
 	const fillJSON = ".\\data\\12.json"
 	const provinceJSON = {
