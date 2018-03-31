@@ -41,8 +41,70 @@ function provinceJSON(province) {
 	}
 }
 function getFuJianData() {
-	const fujiangURL = 'http://www.fjbs.gov.cn/'
-	console.log('福建省')
+	// const fujiangURL = 'http://www.fjbs.gov.cn/';
+	const fujiangURL = 'http://www.fjbs.gov.cn/index.action';
+	const fujiangCode = '?fn=newSiteList&punid=BE604230CB234D4620B334BED6517446';
+	console.log('福建省');	  	
+	fs.createWriteStream('data/12.json')
+	const fillJSON = ".\\data\\12.json"
+	const provinceJSON = {
+		"name": "福建省",
+	    "city": []
+		}
+	const cityCode = []
+	getJsonData(fujiangURL+fujiangCode)
+	function getJsonData(url) {
+		console.log(url)
+		// const formData = new formData;
+		// formData.
+		http.get(url, function(res){
+			res.setEncoding('utf-8'); //防止中文乱码
+			// console.log(res)
+			let html = ''
+			res.on('data', data => {
+				html += data
+			})
+			res.on('end', () => {
+				// console.log(html)
+				const newJSON = JSON.parse(html)
+				// console.log(newJSON['sites'])
+				const cityList = newJSON['sites'];
+				cityList.forEach((key, index) => {
+					console.log(key.name)
+		      		const cityJson = {
+		  			      	"name" : key.name,
+		  			      	"area" : []
+		  			      }
+		  			      if (index !== 0) {
+		  			    	provinceJSON.city.push(cityJson)
+		  			      }
+				})
+				getAreaJSON(0)
+				function getAreaJSON(index) {
+					if(index + 1 <= provinceJSON.city.length) {
+						const areaUrl = fujiangURL + '?fn=newSiteList&punid=' + cityList[index+1].unid
+						console.log(cityList[index].unid)
+						http.get(areaUrl, response => {
+							response.setEncoding('utf-8')
+							let areaString = ''
+							response.on('data', data => {
+								areaString += data
+							})
+							response.on('end', () => {
+								const areaJsonList = JSON.parse(areaString)['sites']
+								areaJsonList.forEach(area => {
+									provinceJSON.city[index].area.push(area.name)
+								})
+								getAreaJSON(index + 1)
+							})
+						})
+					} else {
+						fs.writeFileSync(fillJSON, JSON.stringify(provinceJSON))
+					}
+				}
+			})
+		})
+	}
 }
 
 function getGuangDongData() {
