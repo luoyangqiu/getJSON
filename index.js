@@ -1,4 +1,4 @@
-const cheerio = require('cheerio');
+﻿const cheerio = require('cheerio');
 const http = require('http');
 const iconv = require('iconv-lite');
 const fs = require('fs');
@@ -6,7 +6,7 @@ const fs = require('fs');
 
 // var url = 'http://www.ygdy8.net/html/gndy/dyzz/index.html';
 
-const provinceList = ['河北省', '江苏省', '浙江省', '福建省', '山东省', '湖北省', '广东省', '四川省', '陕西省']
+const provinceList = ['辽宁省', '河北省', '江苏省', '浙江省', '福建省', '山东省', '湖北省', '广东省', '四川省', '陕西省']
 
 
 let getStatus = false // 临时用于处理数据同步请求执行,避免上一次数据未处理完就开始下一次采集
@@ -19,10 +19,13 @@ let getStatus = false // 临时用于处理数据同步请求执行,避免上一
 // 	}
 // }
 // getAddress(0)
-provinceJSON(provinceList[4])
+provinceJSON(provinceList[0])
 
 function provinceJSON(province) {
 	switch(province) {
+		case '辽宁省':
+			getLiaoningData();
+		  	break;
 		case '河北省':
 		  	getHebeiData();
 		  	break;
@@ -67,6 +70,17 @@ function provinceJSON(province) {
 			})
 		})
 	}
+function getLiaoningData() {
+	const liaoningURL = 'http://www.lnzwfw.gov.cn/view/register/index_1.html'
+	console.log('辽宁省')
+			fs.createWriteStream('data/5.json')
+	const fillJSON = ".\\data\\5.json"
+	const provinceJSON = {
+		"name": "辽宁省",
+	    "city": []
+		}
+	const cityCode = []
+}
 
 function getShanDongData() {
 	console.log('山东省')
