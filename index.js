@@ -71,7 +71,9 @@ function provinceJSON(province) {
 		})
 	}
 function getLiaoningData() {
-	const liaoningURL = 'http://www.lnzwfw.gov.cn/view/register/index_1.html'
+	// const liaoningURL = 'http://www.lnzwfw.gov.cn/view/register/index_1.html'
+	const liaoningURL = 'http://www.lnzwfw.gov.cn/view/tzxm/index_1.html'
+	// const liaoningURL = 'http://www.lnzwfw.gov.cn/hz_root_ln/userCenter/Handler.html?type=city&provinceID=6'
 	console.log('辽宁省')
 			fs.createWriteStream('data/5.json')
 	const fillJSON = ".\\data\\5.json"
@@ -80,6 +82,57 @@ function getLiaoningData() {
 	    "city": []
 		}
 	const cityCode = []
+  
+	// console.log(http.POST)
+		getHTML(liaoningURL);
+	function getHTML(url) {
+
+	    // const dataForm = new FormData()
+	    const querystring=require('querystring');  
+
+		//发送 http Post 请求  
+		const postData=querystring.stringify({  
+		    type:'city',
+		    provinceID: 6
+		});  
+		// dataForm.append("type", "city")
+		// dataForm.append("provinceID", 6)
+		const options={  
+					   // host:'218.60.145.133',  
+					   host:'www.lnzwfw.gov.cn',  
+					   port:80,  
+					   path:'/hz_root_ln/userCenter/Handler.html',  
+					   // path:'/hz_root_ln/userCenter/Handler.html?type=city&provinceID=6',  
+					   method:'post',
+					   headers: {    
+						        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+						        	    'Content-Length':Buffer.byteLength(postData)  
+						    }  
+					   // headers:{  
+					   //  //'Content-Type':'application/x-www-form-urlencoded',  
+					   //  'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',  
+				
+					   // }  
+					}
+		// http.post(url, dataForm).then((res,req) => {
+		// 	console.log(res)
+		// }).catch((err)=>{
+		// 	console.log(err)
+		// })
+				console.log('333')
+	http.get(url, function(res){
+			console.log(res)
+			res.setEncoding('utf-8')
+			let html = ''
+			res.on('data', data => {
+				html+=data;
+			})
+			res.on('end', ()=>{
+				console.log(html)
+			})
+		})
+
+	}
 }
 
 function getShanDongData() {
