@@ -6,7 +6,7 @@ const fs = require('fs');
 
 // var url = 'http://www.ygdy8.net/html/gndy/dyzz/index.html';
 
-const provinceList = ['辽宁省', '河北省', '江苏省', '浙江省', '福建省', '山东省', '湖北省', '广东省', '四川省', '陕西省']
+const provinceList = ['山西省', '湖南省', '辽宁省', '河北省', '江苏省', '浙江省', '福建省', '山东省', '湖北省', '广东省', '四川省', '陕西省']
 
 
 let getStatus = false // 临时用于处理数据同步请求执行,避免上一次数据未处理完就开始下一次采集
@@ -23,6 +23,12 @@ provinceJSON(provinceList[0])
 
 function provinceJSON(province) {
 	switch(province) {
+		case '山西省':
+			getSHANXIdata();
+		  	break;
+		case '湖南省':
+			getHunanData();
+		  	break;
 		case '辽宁省':
 			getLiaoningData();
 		  	break;
@@ -58,8 +64,46 @@ function provinceJSON(province) {
 	}
 	getStatus = true
 }
+	// function getJSON(url) {
+	// 	http.get(url, res => {
+	// 		let html = ''
+	// 		res.on('data', data => {
+	// 			html += data
+	// 		})
+	// 		res.on('end', () => {
+	// 			// console.log(html)
+	// 	  const $ = cheerio.load(html, {decodeEntities: false});
+	//            	$(".xq-ti a").each(function (idx, element) {
 
-	function getJSON(url) {
+	// 			      const $element = $(element);
+	// 			      // console.log($element)
+	//   			      // console.log($element.text())
+	//   			      // console.log($element.attr('id'))
+	//   			      // hubeiCode.push($element.attr('id'))
+	//   			      // console.log($element)
+	//   			      const cityJson = {
+	//   			      	"name" : $element.text(),
+	//   			      	"area" : []
+	//   			      }
+	//   			      provinceJSON.city.push(cityJson)
+	//   			      // const valueNumber = $element.val()
+	//   			      // 	console.log(valueNumber)
+	// 			    }) 
+	//            getAreaHTML($)	
+
+	// 		})
+	// 	})
+	// }
+function getHenanData() {
+	const url = 'http://www.hnzwfw.gov.cn/script/0/1703061519439370.js'
+}
+
+function getSHANXIdata() {
+	console.log('山西省')
+	const url = 'http://www.sxzwfw.gov.cn/icity/public/index'
+	getJSON(url)
+	// console.log('http://www.sxzwfw.gov.cn/icity/public/index')
+			function getJSON(url) {
 		http.get(url, res => {
 			let html = ''
 			res.on('data', data => {
@@ -67,9 +111,107 @@ function provinceJSON(province) {
 			})
 			res.on('end', () => {
 				console.log(html)
+				               fs.writeFileSync('data/test.html', html)
+		  const $ = cheerio.load(html, {decodeEntities: false});
+	           	$(".xq-ti a").each(function (idx, element) {
+
+				      const $element = $(element);
+				      // console.log($element)
+	  			      console.log($element.text())
+	  			      // console.log($element.attr('id'))
+	  			      // hubeiCode.push($element.attr('id'))
+	  			      // console.log($element)
+	  			      // const cityJson = {
+	  			      // 	"name" : $element.text(),
+	  			      // 	"area" : []
+	  			      // }
+	  			      // provinceJSON.city.push(cityJson)
+	  			      // const valueNumber = $element.val()
+	  			      // 	console.log(valueNumber)
+				    }) 
+	           // getAreaHTML($)	
+
 			})
 		})
 	}
+}
+
+function getHunanData() {
+	const url = 'http://www.hunan.gov.cn/fzlm/wzdh/szxq/'
+				fs.createWriteStream('data/17.json')
+	const fillJSON = ".\\data\\17.json"
+		console.log('湖南省')
+		const provinceJSON = {
+			"name": "湖南省",
+		    "city": []
+			}
+		const cityCode = []
+		getJSON(url)
+		function getJSON(url) {
+		http.get(url, res => {
+			let html = ''
+			res.on('data', data => {
+				html += data
+			})
+			res.on('end', () => {
+				// console.log(html)
+		  const $ = cheerio.load(html, {decodeEntities: false});
+	           	$(".xq-ti a").each(function (idx, element) {
+
+				      const $element = $(element);
+				      // console.log($element)
+	  			      // console.log($element.text())
+	  			      // console.log($element.attr('id'))
+	  			      // hubeiCode.push($element.attr('id'))
+	  			      // console.log($element)
+	  			      const cityJson = {
+	  			      	"name" : $element.text(),
+	  			      	"area" : []
+	  			      }
+	  			      provinceJSON.city.push(cityJson)
+	  			      // const valueNumber = $element.val()
+	  			      // 	console.log(valueNumber)
+				    }) 
+	           getAreaHTML($)	
+
+			})
+		})
+	}
+	function getAreaHTML(query){
+    	// console.log('json')
+       const selectorDom = ".dblink-box1 ul";
+       console.log(provinceJSON.city.length)
+       query(selectorDom).each((idx, ele) => {
+        const $ele = query(ele)
+        // console.log($ele.text())
+        // console.log(idx)
+        // console.log(provinceJSON.city[idx].name)
+        const dataTextList = $ele.text().split('\n')
+        // const dataList = /(\S+)/mg.match($ele.text())
+        const dataList = $ele.text().match(/(\S+)/mg)
+        console.log(dataList.length)
+        dataList.forEach((data, index) => {
+        	// console.log(data.length)
+        	// const area = data.replace(/\s+/mg, "")
+        	console.log('city:', data)
+        	if (index !== 0) {
+        		provinceJSON.city[idx].area.push(data)
+        	}
+        	// if(area.length > 0) {
+        	// 	// console.log("this==", area)
+        	// 	if (!/\/\//mg.test(area)) {
+        	// 		const newArea = area.replace(/\"\)/mg, '');
+
+        	// 	}
+        	// }
+        })
+        // shanxiJSON.city[index].area.push($ele.text())
+       })
+       // provinceJSON.city[0].name = '省直管县'
+       		fs.writeFileSync(fillJSON, JSON.stringify(provinceJSON))
+  }
+}
+
 function getLiaoningData() {
 	// const liaoningURL = 'http://www.lnzwfw.gov.cn/view/register/index_1.html'
 	const liaoningURL = 'http://www.lnzwfw.gov.cn/view/tzxm/index_1.html'
@@ -736,74 +878,74 @@ function getJiangSuData() {
 	const jiangsuCode = []
 	const jiangsuData = []
 	// 开始爬数据
-getHTML(jiangsuUrl);
-	// 江苏省数据
-function getHTML(url){
-	http.get(url, function(res) {
-      res.setEncoding('utf-8'); //防止中文乱码
-        let html = '';
-        res.on('data', function(data) {
-            html += data;
-        });
-        res.on('end', function() {
-            console.log(html);
-                const $ = cheerio.load(html, {decodeEntities: false});
-                    $('#city option').each(function (idx, element) {
-			      // console.log(idx)
+	getHTML(jiangsuUrl);
+		// 江苏省数据
+	function getHTML(url){
+		http.get(url, function(res) {
+	      res.setEncoding('utf-8'); //防止中文乱码
+	        let html = '';
+	        res.on('data', function(data) {
+	            html += data;
+	        });
+	        res.on('end', function() {
+	            console.log(html);
+	                const $ = cheerio.load(html, {decodeEntities: false});
+	                    $('#city option').each(function (idx, element) {
+				      // console.log(idx)
 
-			      const $element = $(element);
-  			      console.log($element.text())
-  			      console.log($element.val())
-  			      const cityJson = {
-  			      	"name" : $element.text(),
-  			      	"area" : []
-  			      }
-  			      // cityJson[]
-  			      const valueNumber = $element.val()
-  			      if (valueNumber != 999999 && valueNumber != 329998) {
-  			      	// console.log(valueNumber)
-  			      	 	jiangsuCode.push(valueNumber)
-  			      		// jiangsuData.push($element.text())
-  			      		jiansuJSON.city.push(cityJson)
-  			      }
-			
-			      // })
-			    })
-       
-              let index = 0
-              getJSON(index)
-        });
-    });
-}  
-function getJSON(index){
-    if (index + 1 <= jiangsuCode.length){
- const url = 'http://www.jszwfw.gov.cn/jsjis/front/register/showarea.do?code=' + jiangsuCode[index];
-                  console.log(jiangsuCode[index])
-      console.log(url)
-      const tempJSON = {}
-      http.get(url, function(res) {
-      res.setEncoding('utf-8'); //防止中文乱码
-        var html = '';
-        res.on('data', function(data) {
-            html += data;
-        });
-        res.on('end', function() {
-            // console.log(typeof html);
-            const jsonString = JSON.parse(html)
-            console.log(jsonString.params)
-            jsonString.params.jisAreaList.forEach(area => {
-              jiansuJSON.city[index].area.push(area.name)
-            })
-              // jiansuJSON.push(tempJSON)
-              getJSON(index+1)
-        });
-    });
-  } else {
-    // console.log('end')
-    // console.log(jiansuJSON)
-    fs.writeFileSync(fillJSON, JSON.stringify(jiansuJSON))
-    // fs.writeFileSync(fillJSON, jiansuJSON)
-    return false
-  }
-}
+				      const $element = $(element);
+	  			      console.log($element.text())
+	  			      console.log($element.val())
+	  			      const cityJson = {
+	  			      	"name" : $element.text(),
+	  			      	"area" : []
+	  			      }
+	  			      // cityJson[]
+	  			      const valueNumber = $element.val()
+	  			      if (valueNumber != 999999 && valueNumber != 329998) {
+	  			      	// console.log(valueNumber)
+	  			      	 	jiangsuCode.push(valueNumber)
+	  			      		// jiangsuData.push($element.text())
+	  			      		jiansuJSON.city.push(cityJson)
+	  			      }
+				
+				      // })
+				    })
+	       
+	              let index = 0
+	              getJSON(index)
+	        });
+	    });
+	}  
+	function getJSON(index){
+	    if (index + 1 <= jiangsuCode.length){
+	 const url = 'http://www.jszwfw.gov.cn/jsjis/front/register/showarea.do?code=' + jiangsuCode[index];
+	                  console.log(jiangsuCode[index])
+	      console.log(url)
+	      const tempJSON = {}
+	      http.get(url, function(res) {
+	      res.setEncoding('utf-8'); //防止中文乱码
+	        var html = '';
+	        res.on('data', function(data) {
+	            html += data;
+	        });
+	        res.on('end', function() {
+	            // console.log(typeof html);
+	            const jsonString = JSON.parse(html)
+	            console.log(jsonString.params)
+	            jsonString.params.jisAreaList.forEach(area => {
+	              jiansuJSON.city[index].area.push(area.name)
+	            })
+	              // jiansuJSON.push(tempJSON)
+	              getJSON(index+1)
+	        });
+	    });
+	  } else {
+	    // console.log('end')
+	    // console.log(jiansuJSON)
+	    fs.writeFileSync(fillJSON, JSON.stringify(jiansuJSON))
+	    // fs.writeFileSync(fillJSON, jiansuJSON)
+	    return false
+	  }
+	}
 }
