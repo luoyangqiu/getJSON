@@ -8,7 +8,6 @@ const fs = require('fs');
 
 const provinceList = ['山西省', '湖南省', '辽宁省', '河北省', '江苏省', '浙江省', '福建省', '山东省', '湖北省', '广东省', '四川省', '陕西省']
 
-
 let getStatus = false // 临时用于处理数据同步请求执行,避免上一次数据未处理完就开始下一次采集
 // function getAddress(index) {
 // 	if(index+1 <= provinceList.length) {
@@ -65,6 +64,9 @@ function provinceJSON(province) {
 	getStatus = true
 }
 	// function getJSON(url) {
+		//http://www.cuncunle.com/subsite-1001-1.html  
+
+//http://liuyan.people.com.cn/forum/list?fid=8  
 	// 	http.get(url, res => {
 	// 		let html = ''
 	// 		res.on('data', data => {
