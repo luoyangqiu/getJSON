@@ -18,7 +18,7 @@ let getStatus = false // 临时用于处理数据同步请求执行,避免上一
 // 	}
 // }
 // getAddress(0)
-provinceJSON(provinceList[0])
+// provinceJSON(provinceList[0])
 
 function provinceJSON(province) {
 	switch(province) {
@@ -63,6 +63,8 @@ function provinceJSON(province) {
 	}
 	getStatus = true
 }
+
+getAll()
 	// function getJSON(url) {
 		//http://www.cuncunle.com/subsite-1001-1.html  
 
@@ -96,6 +98,113 @@ function provinceJSON(province) {
 	// 		})
 	// 	})
 	// }
+
+	const provinceData = []
+    const provinceListData = ["北京市", "天津市", "河北省", "山西省", "内蒙古自治区", "辽宁省", "吉林省", "黑龙江省", "上海市",
+     "江苏省", "浙江省", "安徽省", "福建省", "江西省", "山东省", "河南省", "湖北省", "湖南省", "广东省", "广西壮族自治区", "海南省",
+      "重庆市", "四川省", "贵州省", "云南省", "西藏自治区", "陕西省", "甘肃省", "青海省", "宁夏回族自治区", "新疆维吾尔自治区", "台湾省", "澳门特别行政区", "香港特别行政区"]
+      
+    const autonomyCity = ["北京市", "天津市", "上海市", "重庆市"]
+
+function getAll() {
+	const path = 'http://liuyan.people.com.cn/index.html';
+	getHTML(path)
+	function getHTML(url) {
+		http.get(url, res => {
+			let html = ''
+			res.on('data', data => {
+				html += data
+			})
+			res.on('end', () => {
+				// console.log(html)
+				               fs.writeFileSync('data/all.html', html)
+		  const $ = cheerio.load(html, {decodeEntities: false});
+	           	$(".district_box02 strong").each(function (idx, element) {
+
+				      const $element = $(element);
+				      // console.log($element)
+	  			      const provinceName = $element.text()
+	  			      console.log(provinceName)
+	  			      console.log(provinceListData.indexOf(provinceName))
+	  			      const index = provinceListData.indexOf(provinceName)
+	  			      createJSON($, provinceName, index, idx)
+	  			      // console.log($element.attr('id'))
+	  			      // hubeiCode.push($element.attr('id'))
+	  			      // console.log($element)
+	  			      // const cityJson = {
+	  			      // 	"name" : $element.text(),
+	  			      // 	"area" : []
+	  			      // }
+	  			      // provinceJSON.city.push(cityJson)
+	  			      // const valueNumber = $element.val()
+	  			      // 	console.log(valueNumber)
+				    }) 
+	           			fs.writeFileSync('test/index.json', JSON.stringify(provinceData))
+	           	// console.log(provinceData)
+	           // getAreaHTML($)	
+
+			})
+		})
+	}
+
+	function createJSON(HTML, name, index, idx) {
+		console.log('index===-------------------------->', idx)
+		const provinceJSON = {
+			"name": provinceListData[index],
+		    "city": []
+			}
+		const query = HTML(".district_box04").eq(idx);
+		// console.log('query==', query.text())
+		if (autonomyCity.includes(name)) {
+			const cityJson = {
+			  	"name" : name,
+			  	"area" : []
+			  }
+			provinceJSON.city.push(cityJson)
+			const city = getCityJSON(query, name)
+			provinceData.push(city.nameList) // 当做索引
+			provinceJSON.city[0].area = city.dataList
+			// const 
+		} else {
+			const city = getCityJSON(query)
+			provinceData.push(city.nameList) // 当做索引
+			provinceJSON.city = city.dataList
+		}
+		fs.writeFileSync('test/'+ idx +'.json', JSON.stringify(provinceJSON))
+	}
+
+	function getCityJSON(query, city) {
+		const dataList = []
+		const nameList = []
+		// const selectorIndex = HTML(".district_box04").eq(index);
+		const selectorDom = "li b";
+       // console.log(provinceJSON.city.length)
+       query.find(selectorDom).each((idx, ele) => {
+        const $ele = query.find(ele)
+        // console.log($ele.text())
+        const cityName = $ele.text().replace(/\n|\s/img, '')
+
+        if (!city) {
+        	const cityJson = {
+			  	"name" : cityName,
+			  	"area" : []
+			  }
+			dataList.push(cityJson)
+			nameList.push(cityName)
+        } else {
+        	dataList.push(cityName)
+        	nameList[0] = city
+        }
+       })
+        const cityList = {
+        	nameList: nameList,
+        	dataList: dataList
+        }
+		return cityList
+	}
+
+}
+
 function getHenanData() {
 	const url = 'http://www.hnzwfw.gov.cn/script/0/1703061519439370.js'
 }
